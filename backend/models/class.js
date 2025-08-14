@@ -15,6 +15,10 @@ const classSchema =new mongoose.Schema(
         },
         categories: {
             type: Array
+        },
+        class_ststus: {
+            type: Boolean,
+            default: true
         }
     },
     {

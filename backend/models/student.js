@@ -22,7 +22,7 @@ const studentSchema = new mongoose.Schema(
             type: Date
         },
         student_status:{
-            type: boolean, 
+            type: Boolean, 
             default: true
         },
         mobile: {
