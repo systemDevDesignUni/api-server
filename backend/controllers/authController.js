@@ -32,9 +32,23 @@ const studentToken = (Student) => {
         },process.env.JWT_SECRET,
         {
             subject: Student._id.toString(),
-            expiresIn: process.env.JWT_EXPIRES_IN || '1d'
+            expiresIn: process.env.JWT_EXPIRES_IN || '1d',
         }
     );
+}
+
+const adminToken = (Admin) => {
+    return jwt.sign(
+        {
+            email: Admin.email,
+            first_name: Admin.first_name,
+            role: "admin",
+        },process.env.JWT_SECRET,
+        {
+            subject: Admin._id.toString(),
+            expiresIn: process.env.JWT_EXPIRES_IN || '1d',
+        }
+    )
 }
 
 const studentRegister = async(req,res) => {
@@ -100,4 +114,16 @@ const studentLogin = async(req,res) => {
     }
 }
 
-export {studentRegister}
+const adminLogin = async(req,res) => {
+    const tmp = loginSchema.safeParse(req.body);
+    if(!tmp.success){
+        throw new AppError(tmp.error.message,400);
+    }
+    const admin = await Admin.findOne({email: tmp.data.email}).select("+password");
+    if(!admin) {
+        throw new AppError(tmp.error.message,400);
+    }
+
+}
+
+export {studentRegister, studentLogin}
