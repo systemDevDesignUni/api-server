@@ -1,18 +1,19 @@
 import jwt from "jsonwebtoken";
 import {email, z} from "zod";
-import { Student } from "../models/student";
-import { AppError } from "../utils/Error";
-import { Admin} from "../models/admin";
+import { Student } from "../models/student.js";
+import { AppError } from "../utils/Error.js";
+import { Admin} from "../models/admin.js";
 import {compare} from "bcrypt";
 
 const registerSchema = z.object({
     first_name: z.string(),
     last_name: z.string(),
     password: z.string(),
-    date_of_birth: z.date(),
+    date_of_birth: z.coerce.date(), // accepts string & converts to Date
     mobile: z.string(),
     email: z.string().email(),
 });
+
 
 
 const loginSchema = z.object({
@@ -52,6 +53,7 @@ const adminToken = (Admin) => {
 }
 
 const studentRegister = async(req,res) => {
+    console.log(req.body);
     const tmp = registerSchema.safeParse(req.body);
     if(!tmp.success){
         throw new AppError(tmp.error.message,400);
@@ -89,7 +91,7 @@ const studentLogin = async(req,res) => {
 
     const student = await Student.findOne({email: tmp.data.email}).select("+password");
     if(student) {
-        const k = Student.comparePassword(tmp.data.password);
+        const k = student.comparePassword(tmp.data.password);
         if(k){
             // create token
             const token = studentToken(student);
@@ -137,7 +139,8 @@ const adminLogin = async(req,res) => {
 }
 
 const student = async(req,res) => {
-    const id = req.body.id;
+    const id = req.query.id;
+    console.log(id)
     const student = await Student.findById(id).select("email first_name last_name mobile");
     if(student) {
         res.status(200).json({

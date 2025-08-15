@@ -1,6 +1,6 @@
 import mongoose from "mongoose";
 import bcrypt from "bcrypt";
-import studentSchema from "express/lib/utils";
+
 
 const adminSchema = new mongoose.Schema(
     {
@@ -19,8 +19,8 @@ adminSchema.pre('save', async function (next) {
     next();
 })
 
-studentSchema.methods.comparePassword = function (password) {
+adminSchema.methods.comparePassword = function (password) {
     return bcrypt.compare(password, this.password);
 }
 
-export const Admin = mongoose.model("Admin", studentSchema);
+export const Admin = mongoose.model("Admin", adminSchema);

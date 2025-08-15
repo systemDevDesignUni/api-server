@@ -1,5 +1,5 @@
 import jwt from 'jsonwebtoken';
-import { AppError } from '../utils/Error';
+import { AppError } from '../utils/Error.js';
 
 export function auth(required = true) {
   return (req, _res, next) => {
