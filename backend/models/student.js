@@ -52,7 +52,7 @@ studentSchema.pre("save", async(next) => {
     next();
 })
 
-studentSchema.methods.comparepassword = (p) => {
+studentSchema.methods.comparePassword = (p) => {
     return bcrypt.compare(p, this.password);
 }
 
