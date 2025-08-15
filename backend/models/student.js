@@ -42,18 +42,19 @@ const studentSchema = new mongoose.Schema(
         timestamps: true
     }
 );
-
-studentSchema.pre("save", async(next) => {
-    if(!this.isModified('password')){
-        return next();
-    }
-    const salt = await bcrypt.genSalt(10);
-    this.password = await bcrypt.hash(this.password,salt);
+studentSchema.pre("save", async function (next) {
+    if (!this.isModified("password")) return next();
+    this.password = await bcrypt.hash(this.password, 10);
     next();
-})
+});
 
-studentSchema.methods.comparepassword = (p) => {
+studentSchema.methods.comparePassword = async function (p) {
     return bcrypt.compare(p, this.password);
-}
+};
 
-export const Student = mongoose.Model("Student",studentSchema);
+
+// studentSchema.methods.comparePassword = (p) => {
+//     return bcrypt.compare(p, this.password);
+// }
+
+export const Student = mongoose.model("Student",studentSchema);

@@ -1,16 +1,19 @@
 import jwt from "jsonwebtoken";
 import {email, z} from "zod";
-import { Student } from "../models/student";
-import { AppError } from "../utils/Error";
+import { Student } from "../models/student.js";
+import { AppError } from "../utils/Error.js";
+import { Admin} from "../models/admin.js";
+import {compare} from "bcrypt";
 
 const registerSchema = z.object({
     first_name: z.string(),
     last_name: z.string(),
     password: z.string(),
-    date_of_birth: z.date(),
+    date_of_birth: z.coerce.date(), // accepts string & converts to Date
     mobile: z.string(),
-    email: z.string.email(),
+    email: z.string().email(),
 });
+
 
 
 const loginSchema = z.object({
@@ -24,16 +27,33 @@ const studentToken = (Student) => {
             email: Student.email,
             first_name: Student.first_name,
             last_name: Student.last_name,
-            mobile: Student.mobile
+            mobile: Student.mobile,
+            student_status: Student.student_status,
+            role: "student"
         },process.env.JWT_SECRET,
         {
             subject: Student._id.toString(),
-            expiresIn: process.env.JWT_EXPIRES_IN || '1d'
+            expiresIn: process.env.JWT_EXPIRES_IN || '1d',
         }
     );
 }
 
+const adminToken = (Admin) => {
+    return jwt.sign(
+        {
+            email: Admin.email,
+            first_name: Admin.first_name,
+            role: "admin",
+        },process.env.JWT_SECRET,
+        {
+            subject: Admin._id.toString(),
+            expiresIn: process.env.JWT_EXPIRES_IN || '1d',
+        }
+    )
+}
+
 const studentRegister = async(req,res) => {
+    console.log(req.body);
     const tmp = registerSchema.safeParse(req.body);
     if(!tmp.success){
         throw new AppError(tmp.error.message,400);
@@ -55,9 +75,87 @@ const studentRegister = async(req,res) => {
             email: student.email,
             first_name: student.first_name,
             last_name: student.last_name,
-            mobile: student.lastname,
+            mobile: student.mobile,
+            student_status: student.student_status,
+            role:"student",
         }
     })
 }
 
-export {studentRegister}
+const studentLogin = async(req,res) => {
+    const tmp = loginSchema.safeParse(req.body);
+
+    if(!tmp.success){
+        throw new AppError(tmp.error.message,400);
+    }
+
+    const student = await Student.findOne({email: tmp.data.email}).select("+password");
+    if(student) {
+        const k = student.comparePassword(tmp.data.password);
+        if(k){
+            // create token
+            const token = studentToken(student);
+            res.status(200).json({
+                message: "student login success",
+                token,
+                student: {
+                    id: student._id,
+                    email: tmp.data.email,
+                    first_name: tmp.data.email,
+                    last_name: tmp.data.email,
+                    mobile: tmp.data.email,
+                    student_status: tmp.data.email,
+                    role: "student",
+                }
+            })
+        }else{
+            throw new AppError(tmp.error.message,400);
+        }
+    }else {
+        throw new AppError(tmp.error.message,400);
+    }
+}
+
+const adminLogin = async(req,res) => {
+    const tmp = loginSchema.safeParse(req.body);
+    if(!tmp.success){
+        throw new AppError(tmp.error.message,400);
+    }
+    const admin = await Admin.findOne({email: tmp.data.email}).select("+password");
+    if(!admin) {
+        throw new AppError(tmp.error.message,400);
+    }
+    const token = adminToken(admin);
+    res.status(200).json({
+        message: "admin login success",
+        token,
+        admin: {
+            id: admin._id,
+            email: admin.email,
+            first_name: admin.name,
+        }
+    })
+
+}
+
+const student = async(req,res) => {
+    const id = req.query.id;
+    console.log(id)
+    const student = await Student.findById(id).select("email first_name last_name mobile");
+    if(student) {
+        res.status(200).json({
+            message: "student data",
+            student: {
+                id: student._id,
+                email: student.email,
+                first_name: student.first_name,
+                last_name: student.last_name,
+                mobile: student.mobile,
+                student_status: student.student_status,
+                role: "student",
+            }
+        })
+    }
+}
+
+export {studentRegister, studentLogin, adminLogin, student}
