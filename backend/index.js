@@ -5,6 +5,7 @@ import morgan from "morgan";
 import 'dotenv/config';
 import connectDB from "./cofiguration/db.js";
 import authRoute from "./routes/auth.js";
+import studentRoute from "./routes/student.js";
 import { AppError } from "./utils/Error.js";
 
 const app = express();
@@ -17,6 +18,7 @@ app.use(morgan("dev"));
 
 // Routes
 app.use("/api/auth", authRoute);
+app.use("/api/student", studentRoute);
 
 // Not found handler (AFTER routes)
 app.use((req, _res, next) =>
