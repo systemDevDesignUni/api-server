@@ -159,4 +159,5 @@ const deleteStudent = async (req, res) => {
         })
     }
 }
-export {studentDetails, allStudents,updateStudent}
+
+export {studentDetails, allStudents,updateStudent,deleteStudent}
