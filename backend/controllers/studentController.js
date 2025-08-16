@@ -50,23 +50,24 @@ const studentDetails = async (req, res) => {
 }
 
 const allStudents = async (req, res) => {
-    try{
-        const limit = parseInt(req.query.l, 10);
-        const page = parseInt(req.query.p);
-        let students;
+    try {
+        const limit = parseInt(req.query.l, 10) || 10;   // default limit = 10
+        const page = parseInt(req.query.p, 10) || 1;     // default page = 1
 
-        if (limit && limit > 0) {
-            const limit = 10;
+        let students;
+        let totalStudents = 0;
+
+        if (limit > 0) {
             const skip = (page - 1) * limit;
 
-            const totalStudents = await Student.countDocuments();
-            const students = await Student.find()
+            totalStudents = await Student.countDocuments();
+            students = await Student.find()
                 .skip(skip)
                 .limit(limit)
                 .sort({ createdAt: -1 });
-            //students = await Student.find().limit(limit);
         } else {
-            students = await Student.find();
+            students = await Student.find().sort({ createdAt: -1 });
+            totalStudents = students.length;
         }
 
         if (!students || students.length === 0) {
@@ -84,20 +85,25 @@ const allStudents = async (req, res) => {
             student_status: student.student_status,
             date_of_birth: student.date_of_birth,
             created: student.createdAt,
-        }))
+        }));
 
         res.status(200).json({
             message: "all student details",
+            meta: {
+                total: totalStudents,
+                page,
+                pages: Math.ceil(totalStudents / limit)
+            },
             data: studentArray,
-        })
-    }catch(e){
-        console.log(e);
+        });
+    } catch (e) {
+        console.error(e);
         res.status(500).json({
-            "message": "Internal Server Error"
-        })
+            message: "Internal Server Error"
+        });
     }
+};
 
-}
 
 
 const updateStudent = async (req, res) => {
