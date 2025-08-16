@@ -160,4 +160,47 @@ const deleteStudent = async (req, res) => {
     }
 }
 
-export {studentDetails, allStudents,updateStudent,deleteStudent}
+const changeStudentStatus = async (req, res) => {
+    try {
+        const id = req.query.id;
+        if (!id) {
+            res.status(400).json({
+                "message": "id is required"
+            })
+        }
+
+        const student = await Student.findById(id);
+        if (!student) {
+            res.status(404).json({
+                "message": "student not found"
+            });
+        }
+        student.status = !student.student_status;
+        await student.save();
+
+        res.status(200).json({
+            message: "student details update successfully",
+            data: {
+                student: {
+                    id: student._id,
+                    first_name: student.first_name,
+                    last_name: student.last_name,
+                    mobile: student.mobile,
+                    email: student.email,
+                    student_status: student.student_status,
+                    date_of_birth: student.date_of_birth,
+                    created: student.createdAt,
+                }
+            }
+        })
+
+    }catch(e){
+        console.log(e);
+        res.status(500).json({
+            "message": "Internal server error"
+        })
+    }
+}
+
+
+export {studentDetails, allStudents,updateStudent,deleteStudent,changeStudentStatus}
