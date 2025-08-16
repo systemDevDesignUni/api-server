@@ -6,7 +6,6 @@ import {z} from "zod";
 const updateSchema = z.object({
     first_name: z.string(),
     last_name: z.string(),
-    password: z.string(),
     date_of_birth: z.coerce.date(), // accepts string & converts to Date
     mobile: z.string(),
     email: z.string().email(),
@@ -126,8 +125,8 @@ const updateStudent = async (req, res) => {
 
         const student = await Student.findByIdAndUpdate(
             id,
-            parsed.data,   // ✅ validated data
-            { new: true }  // ✅ return updated document
+            parsed.data,
+            { new: true }
         );
 
         if (!student) {
@@ -164,21 +163,30 @@ const deleteStudent = async (req, res) => {
     try {
         const id = req.query.id;
         if (!id) {
-            res.status(400).json({
-                "message": "id is required"
-            })
+            return res.status(400).json({
+                message: "id is required",
+            });
         }
-        Student.deleteOne(id);
-        res.status(200).json({
-            message: "student delete successfully",
-        });
 
-    }catch(e){
-        res.status(500).json({
-            "message": "Internal server error"
-        })
+        const result = await Student.findByIdAndDelete(id);
+
+        if (!result) {
+            return res.status(404).json({
+                message: "student not found or already deleted",
+            });
+        }
+
+        return res.status(200).json({
+            message: "student deleted successfully",
+        });
+    } catch (e) {
+        console.error(e);
+        return res.status(500).json({
+            message: "Internal server error",
+        });
     }
-}
+};
+
 
 const changeStudentStatus = async (req, res) => {
     try {
@@ -189,17 +197,21 @@ const changeStudentStatus = async (req, res) => {
             })
         }
 
-        const student = await Student.findById(id);
+        const student = await Student.findByIdAndUpdate(
+            id,
+            [ { $set: { student_status: { $not: "$student_status" } } } ],
+            { new: true } // return updated doc
+        );
         if (!student) {
             res.status(404).json({
                 "message": "student not found"
             });
         }
-        student.status = !student.student_status;
-        await student.save();
+        // student.status = !student.student_status;
+        // await student.save();
 
         res.status(200).json({
-            message: "student details update successfully",
+            message: "student change status successfully",
             data: {
                 student: {
                     id: student._id,

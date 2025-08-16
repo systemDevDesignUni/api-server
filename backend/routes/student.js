@@ -9,6 +9,6 @@ router.get("/studentDetails", auth(true),asyncHandler(studentDetails));
 router.get("/allStudents",auth(true), asyncHandler(allStudents));
 router.put("/updateStudent",auth(true), asyncHandler(updateStudent));
 router.delete("/deleteStudent",auth(true),asyncHandler(deleteStudent));
-router.patch("/updateStudent",auth(true),asyncHandler(changeStudentStatus));
+router.patch("/studentStatus",auth(true),asyncHandler(changeStudentStatus));
 
 export default router;
