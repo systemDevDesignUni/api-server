@@ -102,21 +102,36 @@ const allStudents = async (req, res) => {
 
 const updateStudent = async (req, res) => {
     try {
-        const updateData = updateSchema.safeParse(req.body);
+        const parsed = updateSchema.safeParse(req.body);
+
+        if (!parsed.success) {
+            return res.status(400).json({
+                message: "Invalid data",
+                errors: parsed.error.errors
+            });
+        }
+
         const id = req.query.id;
         if (!id) {
-            res.status(400).json({
-                "message": "id is required"
-            })
+            return res.status(400).json({
+                message: "id is required"
+            });
         }
-        const student = await student.findByIdAndUpdate(id, updateData);
+
+        const student = await Student.findByIdAndUpdate(
+            id,
+            parsed.data,   // ✅ validated data
+            { new: true }  // ✅ return updated document
+        );
+
         if (!student) {
-            res.status(404).json({
-                message: "student not found or Update failed"
-            })
+            return res.status(404).json({
+                message: "student not found or update failed"
+            });
         }
+
         res.status(200).json({
-            message: "student details update successfully",
+            message: "student details updated successfully",
             data: {
                 student: {
                     id: student._id,
@@ -127,18 +142,17 @@ const updateStudent = async (req, res) => {
                     student_status: student.student_status,
                     date_of_birth: student.date_of_birth,
                     created: student.createdAt,
-
                 }
             }
-        })
-    }catch (err) {
-        console.log(err);
+        });
+    } catch (err) {
+        console.error(err);
         res.status(500).json({
-            "message": "Internal server error"
-        })
+            message: "Internal server error"
+        });
     }
-
 }
+
 
 const deleteStudent = async (req, res) => {
     try {
