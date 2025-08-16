@@ -53,96 +53,131 @@ const adminToken = (Admin) => {
 }
 
 const studentRegister = async(req,res) => {
-    console.log(req.body);
-    const tmp = registerSchema.safeParse(req.body);
-    if(!tmp.success){
-        throw new AppError(tmp.error.message,400);
-    }
-
-    const studentExist = await Student.findOne({email: tmp.data.email});
-    if(studentExist) {
-        throw new AppError("email already register",409);
-    }
-
-    const student = await Student.create(tmp.data);
-    const token = studentToken(student);
-
-    res.status(201).json({
-        message: "student register success",
-        token,
-        data: {
-            student: {
-                id: student._id,
-                email: student.email,
-                first_name: student.first_name,
-                last_name: student.last_name,
-                mobile: student.mobile,
-                student_status: student.student_status,
-                role:"student",
-            }
+    try {
+        console.log(req.body);
+        const tmp = registerSchema.safeParse(req.body);
+        if(!tmp.success){
+            res.status(400).json({
+                "message": tmp.error.message,
+            })
         }
 
-    })
+        const studentExist = await Student.findOne({email: tmp.data.email});
+        if(studentExist) {
+            res.status(409).json({
+                "message": "Student already exist",
+            });
+        }
+
+        const student = await Student.create(tmp.data);
+        const token = studentToken(student);
+
+        res.status(201).json({
+            message: "student register success",
+            token,
+            data: {
+                student: {
+                    id: student._id,
+                    email: student.email,
+                    first_name: student.first_name,
+                    last_name: student.last_name,
+                    mobile: student.mobile,
+                    student_status: student.student_status,
+                    role:"student",
+                }
+            }
+
+        })
+    }catch (e) {
+        console.log(e);
+        res.status(500).json({
+            "message": "Internal server error",
+        })
+    }
 }
 
 const studentLogin = async(req,res) => {
-    const tmp = loginSchema.safeParse(req.body);
+    try{
+        const tmp = loginSchema.safeParse(req.body);
 
-    if(!tmp.success){
-        throw new AppError(tmp.error.message,400);
-    }
-
-    const student = await Student.findOne({email: tmp.data.email}).select("+password");
-    if(student) {
-        const k = student.comparePassword(tmp.data.password);
-        if(k){
-            // create token
-            const token = studentToken(student);
-            res.status(200).json({
-                message: "student login success",
-                token,
-                data: {
-                    student: {
-                        id: student._id,
-                        email: tmp.data.email,
-                        first_name: tmp.data.email,
-                        last_name: tmp.data.email,
-                        mobile: tmp.data.email,
-                        student_status: tmp.data.email,
-                        role: "student",
-                    }
-                }
-
+        if(!tmp.success){
+            res.status(400).json({
+                "message":  tmp.error.message,
             })
-        }else{
-            throw new AppError(tmp.error.message,400);
         }
-    }else {
-        throw new AppError(tmp.error.message,400);
+
+        const student = await Student.findOne({email: tmp.data.email}).select("+password");
+        if(student) {
+            const k = student.comparePassword(tmp.data.password);
+            if(k){
+                // create token
+                const token = studentToken(student);
+                res.status(200).json({
+                    message: "student login success",
+                    token,
+                    data: {
+                        student: {
+                            id: student._id,
+                            email: tmp.data.email,
+                            first_name: tmp.data.email,
+                            last_name: tmp.data.email,
+                            mobile: tmp.data.email,
+                            student_status: tmp.data.email,
+                            role: "student",
+                        }
+                    }
+
+                })
+            }else{
+                res.status(400).json({
+                    "message":  "Student Login Failed",
+                })
+            }
+        }else {
+            res.status(404).json({
+                "message":  "Student Not Found",
+            })
+        }
+    }catch (e) {
+        console.log(e);
+        res.status(500).json({
+            "message":  "Server error",
+        })
     }
 }
 
 const adminLogin = async(req,res) => {
-    const tmp = loginSchema.safeParse(req.body);
-    if(!tmp.success){
-        throw new AppError(tmp.error.message,400);
-    }
-    const admin = await Admin.findOne({email: tmp.data.email}).select("+password");
-    if(!admin) {
-        throw new AppError(tmp.error.message,400);
-    }
-    const token = adminToken(admin);
-    res.status(200).json({
-        message: "admin login success",
-        token,
-        data: {
-            admin: {
-                id: admin._id,
-                email: admin.email,
-                first_name: admin.name,
-            }
+    try {
+        const tmp = loginSchema.safeParse(req.body);
+        if(!tmp.success){
+            res.status(400).json({
+                "message":  tmp.error.message,
+            })
         }
-    })
+        const admin = await Admin.findOne({email: tmp.data.email}).select("+password");
+        if(!admin) {
+            return res.status(400).json({
+                "message": "Admin not found",
+            })
+        }
+        const token = adminToken(admin);
+        res.status(200).json({
+            message: "admin login success",
+            token,
+            data: {
+                admin: {
+                    id: admin._id,
+                    email: admin.email,
+                    first_name: admin.name,
+                }
+            }
+        })
+    }catch(e){
+        console.log(e);
+        res.status(500).json({
+            "message": "Internal server error",
+        })
+    }
 
 }
 
