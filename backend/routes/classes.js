@@ -6,7 +6,7 @@ import {createClass,updateClass,allClasses,deleteClass,changeClassStatus} from "
 const router = Router();
 
 router.get("/allClasses", auth(true),  asyncHandler(allClasses));
-router.post("/create", auth(true), asyncHandler(createClass));
+router.post("/createClass", auth(true), asyncHandler(createClass));
 router.put("/updateClass", auth(true), asyncHandler(updateClass));
 router.delete("/deleteClass", auth(true), asyncHandler(deleteClass));
 router.patch("/changeStatus", auth(true), asyncHandler(changeClassStatus));
