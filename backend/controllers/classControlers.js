@@ -1,5 +1,6 @@
 import {Class} from "../../models/class.js";
 import {float32, z} from "zod";
+import {Student} from "../models/student";
 
 
 const createClassSchema = z.object({
@@ -94,5 +95,92 @@ const updateClass = async (req, res) => {
     }
 }
 
+const allClasses = async (req, res) => {
+    try {
+        const classes = await Class.find();
 
-export {createClass}
+        const classArray = classes.map(class_ => ({
+            id: class_._id,
+            class_name: class_.name,
+            description: class_.description,
+            categories: class_.categories,
+            price: class_.price,
+            class_status: class_.class_status,
+            created: class_.createdAt,
+            updated: class_.updatedAt,
+        }))
+    }catch(e){
+        console.log(e);
+        res.status(500).json({
+            "message": "Internal Server Error",
+            "error": e
+        })
+    }
+}
+
+const changeClassStatus = async (req, res) => {
+    try {
+        const id = req.query.id;
+        if (!id) {
+            res.status(400).json({
+                "message": "class id is required"
+            })
+        }
+        const class_ = await Class.findByIdAndUpdate(
+            id,
+            [ { $set: { class_status: { $not: "$class_status" } } } ],
+            { new: true }
+        );
+        res.status(200).json({
+            message: "class change status success",
+            data: {
+                class: {
+                    id: class_._id,
+                    class_name: class_.name,
+                    description: class_.description,
+                    categories: class_.categories,
+                    price: class_.price,
+                    class_status: class_.class_status,
+                    created: class_.createdAt,
+                    updated: class_.updatedAt,
+                }
+            }
+
+        })
+
+    }catch(e){
+        res.status(500).json({
+            "message": "Internal Server Error",
+            "error": e
+        })
+    }
+}
+
+const deleteClass = async (req, res) => {
+    try {
+        const id = req.query.id;
+        if (!id) {
+            res.status(400).json({
+                "message": "class id is required",
+            })
+        }
+        const result = await Class.findByIdAndDelete(id);
+        if (!result) {
+            res.status(404).json({
+                "message": "Class not found"
+            })
+        }
+
+        res.status(200).json({
+            "message": "Class deleted successfully"
+        })
+    }catch(e){
+        console.log(e);
+        return res.status(500).json({
+            "message": "Internal Server Error",
+            "error": e
+        })
+    }
+}
+
+export {createClass,updateClass,allClasses,changeClassStatus,deleteClass}
