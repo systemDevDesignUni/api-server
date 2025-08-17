@@ -1,5 +1,5 @@
 import mongoose from "mongoose";
-import {float32} from "zod";
+import {float32, number} from "zod";
 
 const classSchema =new mongoose.Schema(
     {
@@ -10,10 +10,10 @@ const classSchema =new mongoose.Schema(
         description: {
             type: String
         },
-        class_url: {
-            type: String,
-            required: true
-        },
+        // class_url: {
+        //     type: String,
+        //     required: true
+        // },
         categories: {
             type: Array
         },
@@ -22,7 +22,7 @@ const classSchema =new mongoose.Schema(
             default: true
         },
         price: {
-            type: float32()
+            type: number()
         }
     },
     {
