@@ -1,6 +1,6 @@
-import {Class} from "../../models/class.js";
+import {Class} from "../models/class.js";
 import {float32, z} from "zod";
-import {Student} from "../models/student";
+
 
 
 const createClassSchema = z.object({
@@ -21,7 +21,7 @@ const createClass = async (req, res) => {
             data: {
                 class: {
                     id: class_._id,
-                    class_name: class_.name,
+                    class_name: class_.class_name,
                     description: class_.description,
                     categories: class_.categories,
                     price: class_.price,
@@ -76,7 +76,7 @@ const updateClass = async (req, res) => {
             data: {
                 class: {
                     id: updateClass._id,
-                    class_name: updateClass.name,
+                    class_name: updateClass.class_name,
                     description: updateClass.description,
                     categories: updateClass.categories,
                     price: updateClass.price,
@@ -101,7 +101,7 @@ const allClasses = async (req, res) => {
 
         const classArray = classes.map(class_ => ({
             id: class_._id,
-            class_name: class_.name,
+            class_name: class_.class_name,
             description: class_.description,
             categories: class_.categories,
             price: class_.price,
@@ -136,7 +136,7 @@ const changeClassStatus = async (req, res) => {
             data: {
                 class: {
                     id: class_._id,
-                    class_name: class_.name,
+                    class_name: class_.class_name,
                     description: class_.description,
                     categories: class_.categories,
                     price: class_.price,

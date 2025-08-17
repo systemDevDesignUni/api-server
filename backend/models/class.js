@@ -15,14 +15,14 @@ const classSchema =new mongoose.Schema(
         //     required: true
         // },
         categories: {
-            type: Array
+            type: [String],
         },
         class_status: {
             type: Boolean,
             default: true
         },
         price: {
-            type: number()
+            type: Number
         }
     },
     {
