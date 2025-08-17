@@ -50,7 +50,41 @@ const classUpdateSchema = z.object({
 
 const updateClass = async (req, res) => {
     try {
-        const class_ = await Class.findById(req.params.id);
+        const passSchema = classUpdateSchema.safeParse(req.body);
+        if (!passSchema) {
+            res.status(400).json({
+                "message": "Invalid inputs"
+            })
+        }
+        const id = req.query.id;
+        if(!id){
+            res.status(400).json({
+                "message": "id is required"
+            })
+        }
+
+        const updateClass = await Class.findByIdAndUpdate(id, passSchema,{new: true});
+        if (!updateClass) {
+            res.status(404).json({
+                "message": "class not found"
+            })
+        }
+
+        res.status(200).json({
+            "message": "Class updated successfully",
+            data: {
+                class: {
+                    id: updateClass._id,
+                    class_name: updateClass.name,
+                    description: updateClass.description,
+                    categories: updateClass.categories,
+                    price: updateClass.price,
+                    class_status: updateClass.class_status,
+                    created: updateClass.createdAt,
+                    updated: updateClass.updatedAt,
+                }
+            }
+        })
     }catch(e){
         console.log(e);
         res.status(500).json({
