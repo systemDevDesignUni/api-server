@@ -1,4 +1,5 @@
 import mongoose from "mongoose";
+import {float32, number} from "zod";
 
 const classSchema =new mongoose.Schema(
     {
@@ -9,16 +10,19 @@ const classSchema =new mongoose.Schema(
         description: {
             type: String
         },
-        class_url: {
-            type: String,
-            required: true
-        },
+        // class_url: {
+        //     type: String,
+        //     required: true
+        // },
         categories: {
-            type: Array
+            type: [String],
         },
-        class_ststus: {
+        class_status: {
             type: Boolean,
             default: true
+        },
+        price: {
+            type: Number
         }
     },
     {
@@ -26,4 +30,4 @@ const classSchema =new mongoose.Schema(
     }
 )
 
-export const Class = mongoose.Model("Class",classSchema);
+export const Class = mongoose.model("Class",classSchema);

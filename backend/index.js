@@ -6,6 +6,7 @@ import 'dotenv/config';
 import connectDB from "./cofiguration/db.js";
 import authRoute from "./routes/auth.js";
 import studentRoute from "./routes/student.js";
+import classesRoute from "./routes/classes.js";
 import { AppError } from "./utils/Error.js";
 
 const app = express();
@@ -19,8 +20,9 @@ app.use(morgan("dev"));
 // Routes
 app.use("/api/auth", authRoute);
 app.use("/api/student", studentRoute);
+app.use("/api/classes", classesRoute);
 
-// Not found handler (AFTER routes)
+// Not found handler
 app.use((req, _res, next) =>
     next(new AppError(`Not found: ${req.method} ${req.originalUrl}`, 404))
 );
