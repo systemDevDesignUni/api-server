@@ -7,6 +7,7 @@ import connectDB from "./cofiguration/db.js";
 import authRoute from "./routes/auth.js";
 import studentRoute from "./routes/student.js";
 import classesRoute from "./routes/classes.js";
+import chaptersRoute from "./routes/chapter.js";
 import { AppError } from "./utils/Error.js";
 
 const app = express();
@@ -21,6 +22,7 @@ app.use(morgan("dev"));
 app.use("/api/auth", authRoute);
 app.use("/api/student", studentRoute);
 app.use("/api/classes", classesRoute);
+app.use("/api/chapters", chaptersRoute);
 
 // Not found handler
 app.use((req, _res, next) =>
