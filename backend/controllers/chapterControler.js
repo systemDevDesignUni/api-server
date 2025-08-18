@@ -133,7 +133,59 @@ const deleteChapter = async (req, res) => {
     }
 }
 
-export {createChapter, classChapters}
+const updateSchema = {
+    class_id : z.string(),
+    chapter_url : z.array(z.string()),
+    chapter_name : z.string(),
+    chapter_description : z.string(),
+    chapter_notes: z.array(z.string()),
+}
+
+
+const updateChapter = async (req, res) => {
+    try{
+        const id = req.query.chapter_id;
+        if (!id) {
+            res.status(400).json({
+                "message" : "chapter_id is required"
+            })
+        }
+
+        const passSchema = updateSchema.safeParse(req.body);
+
+        const chapter = await Chapters.findByIdAndUpdate(id,passSchema.data, {new: true});
+        if (!chapter) {
+            res.status(404).json({
+                "message": "Chapter not found"
+            })
+        }
+
+        res.status(200).json({
+            "message": "Chapter updated successfully",
+            data: {
+                "chapter" : {
+                    chapter_id: chapter._id,
+                    class_id: chapter.class_id,
+                    chapter_name: chapter.chapter_name,
+                    chapter_notes: chapter.chapter_notes,
+                    chapter_url: chapter.chapter_url,
+                    chapter_description: chapter.chapter_description,
+                    chapter_status: chapter.chapter_status,
+                    created: chapter.createdAt,
+                    updated_at: chapter.updatedAt,
+                }
+            }
+        })
+    }catch(e){
+        console.log(e);
+        res.status(500).json({
+            "message": "Internal Server Error",
+            "error": e
+        })
+    }
+}
+
+export {createChapter, classChapters,deleteChapter,updateChapter}
 
 
 
