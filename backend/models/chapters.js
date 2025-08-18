@@ -31,4 +31,4 @@ const chapterSchema = new mongoose.Schema(
     { timestamps: true }
 )
 
-export default mongoose.model("Chapters", chapterSchema);
+export const Chapters = mongoose.model("Chapters", chapterSchema);

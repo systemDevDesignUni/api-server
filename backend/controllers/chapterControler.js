@@ -1,5 +1,7 @@
-import Chapter from '../models/Chapter.js'
-import {z} from 'zod'
+import {Chapters} from '../models/chapters.js';
+import {z} from 'zod';
+import {Class} from "../models/class.js";
+
 
 const chapterRegSchema = {
     class_id : z.string(),
@@ -18,8 +20,15 @@ const createChapter = async (req, res) => {
                 "message": "Invalid inputs"
             })
         }
+        // check class is already exists
+        const class_ = await Class.findById(chapterSchema.data.class_id);
+        if (!class_) {
+            res.status(404).json({
+                "message": "Class not found"
+            })
+        }
 
-        const chapter = await Chapter.create(chapter.data);
+        const chapter = await Chapters.create(chapterSchema.data);
         if (!chapter) {
             res.status(400).json({
                 "message": "chapter creation failed"
@@ -49,6 +58,8 @@ const createChapter = async (req, res) => {
         })
     }
 }
+
+
 
 
 
