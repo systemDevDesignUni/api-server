@@ -9,16 +9,24 @@ const chapterSchema = new mongoose.Schema(
             type: String,
             required: true
         },
-        chapter_url: {
+        chapter_name: {
             type: String,
+            required: true
+        },
+        chapter_url: {
+            type: [String],
             required: true
         },
         chapter_description: {
             type: String,
         },
         chapter_notes: {
-            type: Array
+            type: [String],
         },
+        chapter_status: {
+            type: Boolean,
+            default: true
+        }
     },
     { timestamps: true }
 )
