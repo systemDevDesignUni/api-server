@@ -106,6 +106,35 @@ const classChapters = async (req, res) => {
     }
 }
 
+const deleteChapter = async (req, res) => {
+    try {
+        const id = req.query.chapter_id;
+        if (!id) {
+            res.status(400).json({
+                "message": "chapter ID is required"
+            })
+        }
+
+        const result = await Chapters.findByIdAndDelete(id);
+        if (!result) {
+            res.status(404).json({
+                "message": "Chapter not found"
+            })
+        }
+
+        res.status(200).json({
+            "message": "Chapter deleted successfully",
+        })
+    }catch(e){
+        console.log(e);
+        res.status(500).json({
+            "message": "Internal Server Error",
+        })
+    }
+}
+
+export {createChapter, classChapters}
+
 
 
 
