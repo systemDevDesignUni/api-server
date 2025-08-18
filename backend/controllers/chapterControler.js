@@ -40,6 +40,7 @@ const createChapter = async (req, res) => {
             data: {
                 chapter: {
                     chapter_id: chapter._id,
+                    class_id: chapter.class_id,
                     chapter_name: chapter.chapter_name,
                     chapter_notes: chapter.chapter_notes,
                     chapter_url: chapter.chapter_url,
@@ -59,7 +60,51 @@ const createChapter = async (req, res) => {
     }
 }
 
+const classChapters = async (req, res) => {
+    try{
+        const id = req.query.class_id;
+        if (!id) {
+            res.status(400).json({
+                "message": "class_id is required"
+            })
+        }
 
+        const check = await Class.findById(id);
+        if (!check) {
+            res.status(404).json({
+                "message": "Class not found"
+            })
+        }
+
+        const chapters = await Chapters.find({class_id: check.class_id})
+
+        const chapterArr = chapters.map((chapter) => ({
+            chapter_id: chapter._id,
+            class_id: chapter.class_id,
+            chapter_name: chapter.chapter_name,
+            chapter_notes: chapter.chapter_notes,
+            chapter_url: chapter.chapter_url,
+            chapter_description: chapter.chapter_description,
+            chapter_status: chapter.chapter_status,
+            created: chapter.createdAt,
+            updated_at: chapter.updatedAt,
+        }));
+
+        res.status(200).json({
+            "message": "Chapters filter class_id",
+            data: {
+                chapterArr
+            }
+        })
+
+    }catch(e){
+        console.log(e);
+        res.status(500).json({
+            "message": "Internal Server Error",
+            "error": e
+        })
+    }
+}
 
 
 
