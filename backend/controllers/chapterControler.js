@@ -1,6 +1,7 @@
 import {Chapters} from '../models/chapters.js';
 import {z} from 'zod';
 import {Class} from "../models/class.js";
+import mongoose from "mongoose";
 
 
 const chapterRegSchema = z.object(
@@ -65,10 +66,8 @@ const createChapter = async (req, res) => {
 const classChapters = async (req, res) => {
     try {
         const id = req.query.class_id;
-        if (!id) {
-            return res.status(400).json({
-                message: "class_id is required",
-            });
+        if (!id || !mongoose.Types.ObjectId.isValid(id)) {
+            return res.status(400).json({ message: "Invalid student id" });
         }
 
         const check = await Class.findById(id);
@@ -115,10 +114,8 @@ const classChapters = async (req, res) => {
 const deleteChapter = async (req, res) => {
     try {
         const id = req.query.chapter_id;
-        if (!id) {
-            res.status(400).json({
-                "message": "chapter ID is required"
-            })
+        if (!id || !mongoose.Types.ObjectId.isValid(id)) {
+            return res.status(400).json({ message: "Invalid student id" });
         }
 
         const result = await Chapters.findByIdAndDelete(id);
@@ -151,10 +148,8 @@ const updateSchema = z.object({
 const updateChapter = async (req, res) => {
     try{
         const id = req.query.chapter_id;
-        if (!id) {
-            res.status(400).json({
-                "message" : "chapter_id is required"
-            })
+        if (!id || !mongoose.Types.ObjectId.isValid(id)) {
+            return res.status(400).json({ message: "Invalid student id" });
         }
 
         const passSchema = updateSchema.safeParse(req.body);

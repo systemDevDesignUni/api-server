@@ -1,5 +1,6 @@
 import {Class} from "../models/class.js";
 import {float32, z} from "zod";
+import mongoose from "mongoose";
 
 
 
@@ -58,10 +59,8 @@ const updateClass = async (req, res) => {
             })
         }
         const id = req.query.class_id;
-        if(!id){
-            res.status(400).json({
-                "message": "id is required"
-            })
+        if (!id || !mongoose.Types.ObjectId.isValid(id)) {
+            return res.status(400).json({ message: "Invalid student id" });
         }
 
         const updateClass = await Class.findByIdAndUpdate(id, passSchema.data,{new: true});
@@ -134,10 +133,8 @@ const allClasses = async (req, res) => {
 const changeClassStatus = async (req, res) => {
     try {
         const id = req.query.class_id;
-        if (!id) {
-            res.status(400).json({
-                "message": "class id is required"
-            })
+        if (!id || !mongoose.Types.ObjectId.isValid(id)) {
+            return res.status(400).json({ message: "Invalid student id" });
         }
         const class_ = await Class.findByIdAndUpdate(
             id,
@@ -172,10 +169,8 @@ const changeClassStatus = async (req, res) => {
 const deleteClass = async (req, res) => {
     try {
         const id = req.query.class_id;
-        if (!id) {
-            res.status(400).json({
-                "message": "class id is required",
-            })
+        if (!id || !mongoose.Types.ObjectId.isValid(id)) {
+            return res.status(400).json({ message: "Invalid student id" });
         }
         const result = await Class.findByIdAndDelete(id);
         if (!result) {
