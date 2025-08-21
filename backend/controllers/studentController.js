@@ -16,10 +16,8 @@ const updateSchema = z.object({
 const studentDetails = async (req, res) => {
     try {
         const id = req.query.id;
-        if (!id) {
-            res.status(400).json({
-                "message": "id is required"
-            })
+        if (!id || !mongoose.Types.ObjectId.isValid(id)) {
+            return res.status(400).json({ message: "Invalid student id" });
         }
         const student = await Student.findById(id).select('_id first_name last_name mobile email student_status date_of_birth createdAt updatedAt');
         if (!student) {
@@ -121,10 +119,8 @@ const updateStudent = async (req, res) => {
         }
 
         const id = req.query.id;
-        if (!id) {
-            return res.status(400).json({
-                message: "id is required"
-            });
+        if (!id || !mongoose.Types.ObjectId.isValid(id)) {
+            return res.status(400).json({ message: "Invalid student id" });
         }
 
         const student = await Student.findByIdAndUpdate(
@@ -167,10 +163,8 @@ const updateStudent = async (req, res) => {
 const deleteStudent = async (req, res) => {
     try {
         const id = req.query.id;
-        if (!id) {
-            return res.status(400).json({
-                message: "id is required",
-            });
+        if (!id || !mongoose.Types.ObjectId.isValid(id)) {
+            return res.status(400).json({ message: "Invalid student id" });
         }
 
         const result = await Student.findByIdAndDelete(id);
@@ -197,10 +191,8 @@ const deleteStudent = async (req, res) => {
 const changeStudentStatus = async (req, res) => {
     try {
         const id = req.query.id;
-        if (!id) {
-            res.status(400).json({
-                "message": "id is required"
-            })
+        if (!id || !mongoose.Types.ObjectId.isValid(id)) {
+            return res.status(400).json({ message: "Invalid student id" });
         }
 
         const student = await Student.findByIdAndUpdate(
