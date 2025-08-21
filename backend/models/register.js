@@ -8,7 +8,7 @@ const registerSchema = new mongoose.Schema(
             required: true,
         },
         class_id : {
-            type: String,
+            type: [String],
             required: true,
         }
     },{
@@ -16,4 +16,4 @@ const registerSchema = new mongoose.Schema(
 }
 )
 
-export const Register = new mongoose.Schema("Register", registerSchema);
+export const Register = new mongoose.model("Register", registerSchema);
