@@ -1,6 +1,7 @@
 import {Register} from "../models/register.js";
 import {z} from "zod"
 import mongoose from "mongoose";
+import {Chapters} from "../models/chapters";
 
 const createRegister = z.object({
     student_id: z.string(),
@@ -93,6 +94,20 @@ const registerClassByClassId = async(req,res) => {
         if (!id || !mongoose.Types.ObjectId.isValid(id)) {
             return res.status(400).json({ message: "Invalid class id" });
         }
+        const result = await Chapters.find({class_id : id}).sort({ date: -1 });
+
+        const resultArr = result.map((register) => ({
+            register_id: register._id,
+            class_id : register.class_id,
+            student_id: register.student_id,
+        }))
+
+        res.status(200).json({
+            "message": "register filter by class id",
+            "data": {
+                resultArr
+            }
+        })
     }
     catch (e) {
         console.log(e);
