@@ -87,7 +87,7 @@ const updateRegister = async(req,res) => {
 }
 
 // get data using class id
-const registerClassByClassId = async(req,res) => {
+const registerClassByFindClassId = async(req,res) => {
     try {
         const id = req.body.class_id;
 
@@ -119,3 +119,37 @@ const registerClassByClassId = async(req,res) => {
         })
     }
 }
+
+const registerClassByFindStudentId = async(req,res) => {
+    try {
+        const id = req.body.student_id;
+
+        if (!id || !mongoose.Types.ObjectId.isValid(id)) {
+            return res.status(400).json({ message: "Invalid student id" });
+        }
+        const result = await Chapters.find({student_id : id}).sort({ date: -1 });
+
+        const resultArr = result.map((register) => ({
+            register_id: register._id,
+            class_id : register.class_id,
+            student_id: register.student_id,
+        }))
+
+        res.status(200).json({
+            "message": "register filter by class id",
+            "data": {
+                "register" : {
+                    resultArr
+                }
+            }
+        })
+    }
+    catch (e) {
+        console.log(e);
+        res.status(500).json({
+            "message": "internal server error",
+            "error": e.message,
+        })
+    }
+}
+
