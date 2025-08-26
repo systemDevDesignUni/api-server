@@ -33,6 +33,8 @@ const creteRegister = async(req,res) => {
             data: {
                 student_id: result.student_id,
                 class_id : result.class_id ,
+                createdAt:  register.createdAt,
+                updated_at: register.updatedAt,
             }
         })
     }catch(e){
@@ -75,6 +77,8 @@ const updateRegister = async(req,res) => {
             data: {
                 student_id: result.student_id,
                 class_id : result.class_id ,
+                createdAt:  register.createdAt,
+                updated_at: register.updatedAt,
             }
         })
     }catch(e){
@@ -100,6 +104,8 @@ const registerClassByFindClassId = async(req,res) => {
             register_id: register._id,
             class_id : register.class_id,
             student_id: register.student_id,
+            createdAt:  register.createdAt,
+            updated_at: register.updatedAt,
         }))
 
         res.status(200).json({
@@ -133,6 +139,8 @@ const registerClassByFindStudentId = async(req,res) => {
             register_id: register._id,
             class_id : register.class_id,
             student_id: register.student_id,
+            createdAt:  register.createdAt,
+            updated_at: register.updatedAt,
         }))
 
         res.status(200).json({
@@ -146,6 +154,26 @@ const registerClassByFindStudentId = async(req,res) => {
     }
     catch (e) {
         console.log(e);
+        res.status(500).json({
+            "message": "internal server error",
+            "error": e.message,
+        })
+    }
+}
+
+const getAllRegisters = async(req,res) => {
+    try{
+        const results = await Chapters.find().sort({ date: -1 });
+
+        const resultArr = results.map((register) => ({
+            register_id: register._id,
+            class_id : register.class_id,
+            student_id: register.student_id,
+            createdAt:  register.createdAt,
+            updated_at: register.updatedAt,
+        }))
+
+    }catch(e){
         res.status(500).json({
             "message": "internal server error",
             "error": e.message,
