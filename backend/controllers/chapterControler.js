@@ -67,7 +67,7 @@ const classChapters = async (req, res) => {
     try {
         const id = req.query.class_id;
         if (!id || !mongoose.Types.ObjectId.isValid(id)) {
-            return res.status(400).json({ message: "Invalid student id" });
+            return res.status(400).json({ message: "Invalid class id" });
         }
 
         const check = await Class.findById(id);
@@ -115,7 +115,7 @@ const deleteChapter = async (req, res) => {
     try {
         const id = req.query.chapter_id;
         if (!id || !mongoose.Types.ObjectId.isValid(id)) {
-            return res.status(400).json({ message: "Invalid student id" });
+            return res.status(400).json({ message: "Invalid chapter id" });
         }
 
         const result = await Chapters.findByIdAndDelete(id);
@@ -149,7 +149,7 @@ const updateChapter = async (req, res) => {
     try{
         const id = req.query.chapter_id;
         if (!id || !mongoose.Types.ObjectId.isValid(id)) {
-            return res.status(400).json({ message: "Invalid student id" });
+            return res.status(400).json({ message: "Invalid chapter id" });
         }
 
         const passSchema = updateSchema.safeParse(req.body);
