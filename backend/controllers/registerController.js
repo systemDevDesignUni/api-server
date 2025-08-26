@@ -105,7 +105,9 @@ const registerClassByClassId = async(req,res) => {
         res.status(200).json({
             "message": "register filter by class id",
             "data": {
-                resultArr
+                "register" : {
+                    resultArr
+                }
             }
         })
     }
