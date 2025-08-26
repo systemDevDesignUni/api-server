@@ -99,7 +99,11 @@ const classChapters = async (req, res) => {
 
         return res.status(200).json({
             message: "Chapters filtered by class_id",
-            data: chapterArr,
+            data: {
+                "chapters": {
+                    chapterArr
+                }
+            },
         });
     } catch (e) {
         console.error(e);
