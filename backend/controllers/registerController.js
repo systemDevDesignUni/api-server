@@ -181,3 +181,29 @@ const getAllRegisters = async(req,res) => {
     }
 }
 
+const deleteRegisterClassByRegisterId = async(req,res) => {
+
+    try{
+        const id = req.body.register_id;
+
+        if (!id || !mongoose.Types.ObjectId.isValid(id)) {
+            return res.status(400).json({ message: "Invalid register id" });
+        }
+
+        const result = await Chapters.findByIdAndDelete(id);
+        if(!result){
+            res.status(404).json({
+                "message": "Register not found or delete failed"
+            })
+        }
+
+        res.status(200).json({
+            message: "Successfully deleted register",
+        })
+    }catch(e){
+        res.status(500).json({
+            "message": "internal server error",
+            "error": e.message,
+        })
+    }
+}
