@@ -2,49 +2,67 @@ import {Register} from "../models/register.js";
 import {z} from "zod"
 import mongoose from "mongoose";
 import {Chapters} from "../models/chapters.js";
+import {Student} from "../models/student.js";
+import {Class} from "../models/class.js";
 
 const createRegister = z.object({
     student_id: z.string(),
-    class_id : z.array(z.string()),
-})
+    class_id: z.array(z.string()),
+});
 
-const creteStudentRegister = async(req,res) => {
-    try{
-        // const id = req.query.id;
-        // if(!id){
-        //     res.status(400).json({
-        //         "message": "id is required"
-        //     })
-        // }
+const creteStudentRegister = async (req, res) => {
+    try {
         const registerSafeParse = createRegister.safeParse(req.body);
-        if(!registerSafeParse){
-            res.status(400).json({
-                "message": "invalid inputs"
-            })
+        if (!registerSafeParse.success) {
+            return res.status(400).json({
+                message: "invalid inputs",
+                errors: registerSafeParse.error.errors,
+            });
         }
+
+        const { student_id, class_id } = registerSafeParse.data;
+
+        // check student in db
+        const stuIsExists = await Student.findById(student_id);
+        if (!stuIsExists) {
+            return res.status(404).json({
+                message: "student not found",
+            });
+        }
+
+        // check all class_ids in db
+        const classes = await Class.find({ _id: { $in: class_id } });
+        if (classes.length !== class_id.length) {
+            return res.status(404).json({
+                message: " classes not found",
+            });
+        }
+
+        // create register
         const result = await Register.create(registerSafeParse.data);
-        if(!result){
-            res.status(400).json({
-                "message": "register creation failed"
-            })
+        if (!result) {
+            return res.status(400).json({
+                message: "register creation failed",
+            });
         }
-        res.status(201).json({
+
+        return res.status(201).json({
             message: "Successfully registered",
             data: {
                 student_id: result.student_id,
-                class_id : result.class_id ,
-                createdAt:  result.createdAt,
-                updated_at: result.updatedAt,
-            }
-        })
-    }catch(e){
-        console.log(e.message);
-        res.status(500).json({
-            "message": "Internal Server Error",
-            "error": e.message,
-        })
+                class_id: result.class_id,
+                createdAt: result.createdAt,
+                updatedAt: result.updatedAt,
+            },
+        });
+    } catch (e) {
+        console.error(e.message);
+        return res.status(500).json({
+            message: "Internal Server Error",
+            error: e.message,
+        });
     }
-}
+};
 
 const updateRegSchema = z.object({
     class_id: z.array(z.string()),
@@ -52,10 +70,14 @@ const updateRegSchema = z.object({
 
 const updateRegister = async (req, res) => {
     try {
-        const studentId = req.query.student_id;
+        const id = req.query.student_id;
 
-        if (!studentId) {
+        if (!id) {
             return res.status(400).json({ message: "student_id is required" });
+        }
+
+        if (!id || !mongoose.Types.ObjectId.isValid(id)) {
+            return res.status(400).json({ message: "Invalid student id" });
         }
 
         const registerSafeParse = updateRegSchema.safeParse(req.body);
@@ -67,7 +89,7 @@ const updateRegister = async (req, res) => {
         }
 
         const result = await Register.findOneAndUpdate(
-            { student_id: studentId },
+            { student_id: id },
             registerSafeParse.data,
             { new: true }
         );
@@ -249,4 +271,4 @@ const deleteRegisterClassByRegisterId = async (req, res) => {
 
 
 
-export {creteStudentRegister,updateRegister,registerClassByFindClassId, registerClassByFindStudentId, getAllRegisters, deleteRegisterClassByRegisterId};
+export { creteStudentRegister,updateRegister,registerClassByFindClassId, registerClassByFindStudentId, getAllRegisters, deleteRegisterClassByRegisterId};

@@ -1,5 +1,6 @@
 import {Class} from "../models/class.js";
 import {float32, z} from "zod";
+
 import mongoose from "mongoose";
 
 
@@ -15,6 +16,7 @@ const createClass = async (req, res) => {
     try{
         const newClass = createClassSchema.safeParse(req.body);
         console.log(newClass);
+
         const class_ = await Class.create(newClass.data);
 
         res.status(201).json({
