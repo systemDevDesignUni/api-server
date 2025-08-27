@@ -1,14 +1,14 @@
 import {Register} from "../models/register.js";
 import {z} from "zod"
 import mongoose from "mongoose";
-import {Chapters} from "../models/chapters";
+import {Chapters} from "../models/chapters.js";
 
 const createRegister = z.object({
     student_id: z.string(),
     class_id : z.array(z.string()),
 })
 
-const creteRegister = async(req,res) => {
+const creteStudentRegister = async(req,res) => {
     try{
         // const id = req.query.id;
         // if(!id){
@@ -33,12 +33,12 @@ const creteRegister = async(req,res) => {
             data: {
                 student_id: result.student_id,
                 class_id : result.class_id ,
-                createdAt:  register.createdAt,
-                updated_at: register.updatedAt,
+                createdAt:  result.createdAt,
+                updated_at: result.updatedAt,
             }
         })
     }catch(e){
-        console.log(e);
+        console.log(e.message);
         res.status(500).json({
             "message": "Internal Server Error",
             "error": e.message,
@@ -46,59 +46,66 @@ const creteRegister = async(req,res) => {
     }
 }
 
-const updateRegSchema =  z.object({
-    class_id:z.array(z.string()),
-})
+const updateRegSchema = z.object({
+    class_id: z.array(z.string()),
+});
 
-const updateRegister = async(req,res) => {
-
+const updateRegister = async (req, res) => {
     try {
-        const id = req.body.id;
+        const studentId = req.query.student_id;
 
-        if (!id || !mongoose.Types.ObjectId.isValid(id)) {
-            return res.status(400).json({ message: "Invalid id" });
+        if (!studentId) {
+            return res.status(400).json({ message: "student_id is required" });
         }
 
-        const registerSafeParse = createRegister.safeParse(req.body);
-        if(!registerSafeParse){
-            res.status(400).json({
-                "message": "invalid inputs"
-            })
+        const registerSafeParse = updateRegSchema.safeParse(req.body);
+        if (!registerSafeParse.success) {
+            return res.status(400).json({
+                message: "invalid inputs",
+                errors: registerSafeParse.error.errors
+            });
         }
 
-        const result = await Register.findByIdAndUpdate(id,registerSafeParse.data,{new: true});
-        if(!result){
-            res.status(404).json({
-                "message": "Register not found or update failed"
-            })
+        const result = await Register.findOneAndUpdate(
+            { student_id: studentId },
+            registerSafeParse.data,
+            { new: true }
+        );
+
+        if (!result) {
+            return res.status(404).json({
+                message: "Register not found or update failed"
+            });
         }
-        res.status(200).json({
+
+        return res.status(200).json({
             message: "Successfully updated register",
             data: {
                 student_id: result.student_id,
-                class_id : result.class_id ,
-                createdAt:  register.createdAt,
-                updated_at: register.updatedAt,
+                class_id: result.class_id,
+                createdAt: result.createdAt,
+                updatedAt: result.updatedAt,
             }
-        })
-    }catch(e){
+        });
+    } catch (e) {
         console.log(e);
-        res.status(500).json({
-            "message": "invalid inputs",
-            "error": e.message,
-        })
+        return res.status(500).json({
+            message: "Something went wrong",
+            error: e.message,
+        });
     }
-}
+};
+
 
 // get data using class id
 const registerClassByFindClassId = async(req,res) => {
     try {
-        const id = req.body.class_id;
+        const id = req.query.class_id;
 
         if (!id || !mongoose.Types.ObjectId.isValid(id)) {
             return res.status(400).json({ message: "Invalid class id" });
         }
-        const result = await Chapters.find({class_id : id}).sort({ date: -1 });
+        const result = await Register.find({class_id : id}).sort({ date: -1 });
 
         const resultArr = result.map((register) => ({
             register_id: register._id,
@@ -128,12 +135,12 @@ const registerClassByFindClassId = async(req,res) => {
 
 const registerClassByFindStudentId = async(req,res) => {
     try {
-        const id = req.body.student_id;
+        const id = req.query.student_id;
 
         if (!id || !mongoose.Types.ObjectId.isValid(id)) {
             return res.status(400).json({ message: "Invalid student id" });
         }
-        const result = await Chapters.find({student_id : id}).sort({ date: -1 });
+        const result = await Register.find({student_id : id}).sort({ date: -1 });
 
         const resultArr = result.map((register) => ({
             register_id: register._id,
@@ -144,7 +151,7 @@ const registerClassByFindStudentId = async(req,res) => {
         }))
 
         res.status(200).json({
-            "message": "register filter by class id",
+            "message": "register filter by student id",
             "data": {
                 "register" : {
                     resultArr
@@ -161,51 +168,85 @@ const registerClassByFindStudentId = async(req,res) => {
     }
 }
 
-const getAllRegisters = async(req,res) => {
-    try{
-        const results = await Chapters.find().sort({ date: -1 });
+const getAllRegisters = async (req, res) => {
+    try {
+        const results = await Register.find().sort({ createdAt: -1 });
 
         const resultArr = results.map((register) => ({
             register_id: register._id,
-            class_id : register.class_id,
             student_id: register.student_id,
-            createdAt:  register.createdAt,
-            updated_at: register.updatedAt,
-        }))
+            class_id: register.class_id,
+            createdAt: register.createdAt,
+            updatedAt: register.updatedAt,
+        }));
 
-    }catch(e){
-        res.status(500).json({
-            "message": "internal server error",
-            "error": e.message,
-        })
+        return res.status(200).json({
+            message: "Successfully retrieved all registers",
+            data: resultArr,
+        });
+    } catch (e) {
+        console.error(e);
+        return res.status(500).json({
+            message: "Internal server error",
+            error: e.message,
+        });
     }
-}
+};
 
-const deleteRegisterClassByRegisterId = async(req,res) => {
 
-    try{
-        const id = req.body.register_id;
+const deleteRegisterSchema = z.object({
+    class_id: z.array(z.string()),
+});
 
-        if (!id || !mongoose.Types.ObjectId.isValid(id)) {
-            return res.status(400).json({ message: "Invalid register id" });
+
+const deleteRegisterClassByRegisterId = async (req, res) => {
+    try {
+        const studentId = req.query.student_id;
+
+        if (!studentId) {
+            return res.status(400).json({ message: "student_id is required" });
         }
 
-        const result = await Chapters.findByIdAndDelete(id);
-        if(!result){
-            res.status(404).json({
-                "message": "Register not found or delete failed"
-            })
+        const passSchema = deleteRegisterSchema.safeParse(req.body);
+        if (!passSchema.success) {
+            return res.status(400).json({
+                message: "invalid inputs",
+                errors: passSchema.error.errors,
+            });
         }
 
-        res.status(200).json({
-            message: "Successfully deleted register",
-        })
-    }catch(e){
-        res.status(500).json({
-            "message": "internal server error",
-            "error": e.message,
-        })
-    }
-}
+        const { class_id } = passSchema.data;
 
-export {createRegister,updateRegister,registerClassByFindClassId, registerClassByFindStudentId, getAllRegisters, deleteRegisterClassByRegisterId};
+        const result = await Register.findOneAndUpdate(
+            { student_id: studentId },                  // search by student_id
+            { $pull: { class_id: { $in: class_id } } }, // remove class_ids
+            { new: true }                               // return updated doc
+        );
+
+        if (!result) {
+            return res.status(404).json({
+                message: "Register not found or delete failed"
+            });
+        }
+
+        return res.status(200).json({
+            message: "Successfully deleted selected classes from register",
+            data: {
+                student_id: result.student_id,
+                class_id: result.class_id,
+                createdAt: result.createdAt,
+                updatedAt: result.updatedAt,
+            }
+        });
+    } catch (e) {
+        console.error(e);
+        return res.status(500).json({
+            message: "Internal server error",
+            error: e.message,
+        });
+    }
+};
+
+
+
+export {creteStudentRegister,updateRegister,registerClassByFindClassId, registerClassByFindStudentId, getAllRegisters, deleteRegisterClassByRegisterId};

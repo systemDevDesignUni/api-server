@@ -9,7 +9,7 @@ import studentRoute from "./routes/student.js";
 import classesRoute from "./routes/classes.js";
 import chaptersRoute from "./routes/chapter.js";
 import { AppError } from "./utils/Error.js";
-import registerRoute from "./routes/register";
+import registerRoute from "./routes/register.js";
 const app = express();
 
 // Security
