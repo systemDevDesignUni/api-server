@@ -2,13 +2,22 @@ import {Payment} from "../models/payments.js";
 import {Student} from "../models/student.js";
 import {Class} from "../models/class.js";
 import mongoose from "mongoose";
+import {z} from "zod";
 
+const paymentSchema = z.object({
+    student_id:z.string(),
+    class_id:z.string(),
+    reference: z.string().optional(),
+})
 
 const createPayment = async (req, res) => {
     try {
-        const { student_id, class_id, reference } = req.body;
+        const safeParse = paymentSchema.safeParse(req.body)
 
-        //check student exists
+        const student_id = safeParse.data.student_id;
+        const class_id = safeParse.data.class_id;
+        const reference = safeParse.data.reference;
+
         const student = await Student.findById(student_id);
         if (!student) {
             return res.status(404).json({ message: "Student not found" });
