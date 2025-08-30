@@ -105,7 +105,7 @@ const getPaymentsByClass = async (req, res) => {
 }
 
 
-const PayThisMonthStudent = async (req, res) => {
+const payThisMonthStudent = async (req, res) => {
     try {
         const { class_id, student_id } = req.query;
 
@@ -161,4 +161,4 @@ const PayThisMonthStudent = async (req, res) => {
 };
 
 
-export {getPaymentsByStudent, getPaymentsByClass, createPayment , PayThisMonthStudent}
+export {getPaymentsByStudent, getPaymentsByClass, createPayment , payThisMonthStudent}
