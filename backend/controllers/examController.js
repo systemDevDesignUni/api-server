@@ -88,4 +88,4 @@ const deleteExam = async (req, res) => {
     }
 }
 
-export {createExam}
+export {createExam, deleteExam}
