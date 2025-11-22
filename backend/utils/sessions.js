@@ -11,6 +11,8 @@ function generateRandomId() {
    }
 }
 
-const session = (student_id) =>{
-
+const CreateSessionId = (student_id) =>{
+    const sesId = generateRandomId()
+    exam_session.push(sesId)
+    return sesId
 }
