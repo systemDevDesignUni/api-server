@@ -5,13 +5,13 @@ import { storeExamAnswers, checkMcqAnswers } from "../utils/examRand.js";
 import { createSessionId, getSessionId } from "../utils/sessions.js";
 
 
-const examSchema = z.object({
-    class_id: z.string(),
-    exam_name: z.string(),
-    exam_description: z.string(),
-    exam_type: z.number(),
-    additional: z.string().optional()
-});
+// const examSchema = z.object({
+//     class_id: z.string(),
+//     exam_name: z.string(),
+//     exam_description: z.string(),
+//     exam_type: z.number(),
+//     additional: z.string().optional()
+// });
 
 const examDeleteSchema = z.object({
     exam_id: z.string()
@@ -23,21 +23,42 @@ const examMcqSchema = z.object({
     answers: z.string() 
 });
 
+const examSchema = z.object({
+    class_id: z.string(),
+    exam_name: z.string(),
+    exam_description: z.string(),
+    exam_type: z.number(),
+    duration: z.number(),          
+    additional: z.string().optional(),
+
+    mcq: z.array(
+        z.object({
+            question: z.string(),
+            answers: z.array(z.string()),
+            correct_answer: z.array(z.number())
+        })
+    )
+});
+
+
 
 const createExam = async (req, res) => {
     try {
-        const body = examSchema.safeParse(req.body);
+        const parsed = examSchema.safeParse(req.body);
 
-        if (!body.success) {
-            return res.status(401).json({
+        if (!parsed.success) {
+            return res.status(400).json({
                 message: "Schema validation failed",
-                errors: body.error.errors
+                errors: parsed.error.errors
             });
         }
 
-        const created = await Exam.create(body.data);
+        const examData = parsed.data;
 
-        if (!created) {
+        // Save exam
+        const createdExam = await Exam.create(examData);
+
+        if (!createdExam) {
             return res.status(500).json({
                 message: "Exam creation failed"
             });
@@ -45,7 +66,7 @@ const createExam = async (req, res) => {
 
         return res.status(201).json({
             message: "Exam created successfully",
-            exam_id: created._id
+            exam_id: createdExam._id
         });
 
     } catch (e) {
@@ -55,6 +76,7 @@ const createExam = async (req, res) => {
         });
     }
 };
+
 
 
 const deleteExam = async (req, res) => {
@@ -93,7 +115,13 @@ const deleteExam = async (req, res) => {
 
 const getExam = async (req, res) => {
     try {
-        const exam_id = req.params.exam_id;
+        const exam_id = req.query.exam_id;
+        const student_id = req.user._id; 
+        if (!exam_id) {
+            return res.status(400).json({
+                message: "exam_id is required"
+            });
+        }
 
         const exam = await Exam.findById(exam_id);
 
@@ -104,36 +132,42 @@ const getExam = async (req, res) => {
         }
 
         
-        const mcqs = [...exam.mcq].sort(() => Math.random() - 0.5);
+        const shuffled = [...exam.mcq].sort(() => Math.random() - 0.5);
 
         
-        const answerMap = {};
-        mcqs.forEach((q, index) => {
-            answerMap[index + 1] = q.correct_answer;
+        const correctAnswersMap = {};
+        shuffled.forEach((q, i) => {
+            correctAnswersMap[i + 1] = q.correct_answer;
         });
 
-        storeExamAnswers(exam_id, JSON.stringify(answerMap));
+        storeExamAnswers(exam_id, JSON.stringify(correctAnswersMap));
+
+        const session_id = createSessionId(student_id, exam_id, exam.duration);
 
         
-        const publicMcq = mcqs.map(q => ({
+        const publicMcq = shuffled.map(q => ({
             question: q.question,
             answers: q.answers
         }));
 
         return res.status(200).json({
-            exam_id,
+            message: "Exam loaded successfully",
+            session_id: session_id,          
+            exam_id: exam_id,
             exam_name: exam.exam_name,
             exam_description: exam.exam_description,
-            mcq: publicMcq
+            duration: exam.duration,
+            mcq: publicMcq                    
         });
 
-    } catch (e) {
-        console.error(e);
+    } catch (err) {
+        console.error(err);
         return res.status(500).json({
             message: "Server error"
         });
     }
 };
+
 
 
 const checkExamMcq = (req, res) => {
