@@ -29,6 +29,7 @@ const getSessionId = (session_id) => {
     const session = exam_session[session_id]
 
     if(!session){
+        return false
     }
 
     const now = new Date();
@@ -39,3 +40,5 @@ const getSessionId = (session_id) => {
 
     return true
 }
+
+export {createSessionId, getSessionId}
